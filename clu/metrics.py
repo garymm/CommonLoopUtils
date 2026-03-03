@@ -1,4 +1,4 @@
-# Copyright 2025 The CLU Authors.
+# Copyright 2026 The CLU Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -193,8 +193,7 @@ class Metric:
       # pylint: disable-next=protected-access
       return reduced._reduce_merge(metric), None
 
-    # Avoid degraded performance under the new jax.pmap. See
-    # https://docs.jax.dev/en/latest/migrate_pmap.html#int-indexing-into-sharded-arrays.
+    # Avoid degraded performance under the new jax.pmap.
     # Only use the sharding path for concrete sharded arrays, not tracers.
     def _is_concrete_sharded(x):
       if isinstance(x, jax.core.Tracer):
@@ -208,11 +207,7 @@ class Metric:
       return shards[0].data.ndim > 0 and shards[0].data.shape[0] == 1
 
     leaves = jax.tree_util.tree_leaves(self)
-    use_sharding_path = (
-        jax.config.jax_pmap_shmap_merge
-        and leaves
-        and _is_concrete_sharded(leaves[0])
-    )
+    use_sharding_path = leaves and _is_concrete_sharded(leaves[0])
 
     if use_sharding_path:
 
